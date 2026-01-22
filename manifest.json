@@ -2,27 +2,35 @@
   "name": "זיכרון טוב",
   "short_name": "זיכרון טוב",
   "description": "תוכנת תמיכה לחולי דמנציה - שעון, תזכורות, משחקי זיכרון ושיחות וידאו",
-  "start_url": "index.html",
+
+  "id": "/zikaron-tov/",
+  "start_url": "/zikaron-tov/",
+  "scope": "/zikaron-tov/",
+
   "display": "standalone",
   "orientation": "any",
+
   "background_color": "#2D5A7B",
   "theme_color": "#2D5A7B",
+
   "lang": "he",
   "dir": "rtl",
+
   "icons": [
-  {
-    "src": "/zikaron-tov/icon-192-v2.png",
-    "sizes": "192x192",
-    "type": "image/png"
-  },
-  {
-    "src": "/zikaron-tov/icon-512-v2.png",
-    "sizes": "512x512",
-    "type": "image/png"
-  }
-]
+    {
+      "src": "/zikaron-tov/icon-192-v2.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/zikaron-tov/icon-512-v2.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
 
   "categories": ["health", "medical", "lifestyle"],
-  "screenshots": [],
   "prefer_related_applications": false
 }
