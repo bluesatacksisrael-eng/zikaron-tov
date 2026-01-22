@@ -1,0 +1,3488 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#2D5A7B">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="זיכרון טוב">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="זיכרון טוב">
+    <meta name="description" content="תוכנת תמיכה לחולי דמנציה - שעון, תזכורות, משחקי זיכרון">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <title>זיכרון טוב - תוכנת תמיכה לחולי דמנציה</title>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2D5A7B;
+            --primary-light: #4A7FA8;
+            --primary-dark: #1E3D54;
+            --accent: #E8A849;
+            --accent-light: #FFD085;
+            --success: #4CAF50;
+            --warning: #FF9800;
+            --danger: #E53935;
+            --bg-main: #F5F7FA;
+            --bg-card: #FFFFFF;
+            --text-primary: #2C3E50;
+            --text-secondary: #5D6D7E;
+            --text-light: #95A5A6;
+            --shadow-soft: 0 4px 20px rgba(0,0,0,0.08);
+            --shadow-medium: 0 8px 30px rgba(0,0,0,0.12);
+            --radius-lg: 24px;
+            --radius-md: 16px;
+            --radius-sm: 12px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Heebo', 'Rubik', sans-serif;
+            background: linear-gradient(135deg, var(--bg-main) 0%, #E8EDF2 100%);
+            min-height: 100vh;
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+
+        /* Main Clock Screen */
+        .clock-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 40px;
+            position: relative;
+        }
+
+        .clock-container {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-medium);
+            padding: 60px 80px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            max-width: 900px;
+            width: 100%;
+        }
+
+        .clock-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 8px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+        }
+
+        .greeting {
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 20px;
+            animation: fadeIn 1s ease;
+        }
+
+        .time-display {
+            font-size: 8rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            letter-spacing: -4px;
+            margin: 20px 0;
+            text-shadow: 2px 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .date-display {
+            font-size: 3rem;
+            font-weight: 500;
+            color: var(--primary-light);
+            margin-bottom: 15px;
+        }
+
+        .day-period {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            color: white;
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-size: 2rem;
+            font-weight: 600;
+            margin-top: 20px;
+            box-shadow: 0 4px 15px rgba(232, 168, 73, 0.4);
+        }
+
+        .hebrew-date {
+            font-size: 1.8rem;
+            color: var(--text-secondary);
+            margin-top: 25px;
+        }
+
+        /* Navigation Menu */
+        .nav-menu {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+            z-index: 100;
+        }
+
+        .nav-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 15px 30px;
+            background: var(--bg-main);
+            border: none;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 120px;
+        }
+
+        .nav-btn:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(45, 90, 123, 0.3);
+        }
+
+        .nav-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .nav-btn svg {
+            width: 40px;
+            height: 40px;
+        }
+
+        .nav-btn span {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        /* Page Sections */
+        .page-section {
+            display: none;
+            min-height: 100vh;
+            padding: 40px;
+            padding-bottom: 140px;
+        }
+
+        .page-section.active {
+            display: block;
+            animation: slideIn 0.4s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .page-title {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        /* Reminders Section */
+        .reminders-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .reminder-card {
+            background: white;
+            border-radius: var(--radius-md);
+            padding: 30px;
+            box-shadow: var(--shadow-soft);
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .reminder-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .reminder-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            flex-shrink: 0;
+        }
+
+        .reminder-icon.medicine { background: linear-gradient(135deg, #E53935, #EF5350); }
+        .reminder-icon.shower { background: linear-gradient(135deg, #2196F3, #42A5F5); }
+        .reminder-icon.meal { background: linear-gradient(135deg, #4CAF50, #66BB6A); }
+        .reminder-icon.water { background: linear-gradient(135deg, #00BCD4, #26C6DA); }
+        .reminder-icon.exercise { background: linear-gradient(135deg, #FF9800, #FFA726); }
+        .reminder-icon.sleep { background: linear-gradient(135deg, #9C27B0, #AB47BC); }
+
+        .reminder-content h3 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .reminder-time {
+            font-size: 1.4rem;
+            color: var(--text-secondary);
+        }
+
+        .reminder-toggle {
+            margin-right: auto;
+            width: 60px;
+            height: 34px;
+            background: #ddd;
+            border-radius: 17px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .reminder-toggle.active {
+            background: var(--success);
+        }
+
+        .reminder-toggle::after {
+            content: '';
+            position: absolute;
+            width: 26px;
+            height: 26px;
+            background: white;
+            border-radius: 50%;
+            top: 4px;
+            right: 4px;
+            transition: transform 0.3s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .reminder-toggle.active::after {
+            transform: translateX(-26px);
+        }
+
+        /* Add Reminder Form */
+        .add-reminder-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            border: none;
+            padding: 25px 50px;
+            border-radius: var(--radius-md);
+            font-size: 1.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 30px auto;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(45, 90, 123, 0.3);
+        }
+
+        .add-reminder-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(45, 90, 123, 0.4);
+        }
+
+        /* Games Section */
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .game-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-soft);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .game-card:hover {
+            transform: translateY(-10px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .game-image {
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 5rem;
+        }
+
+        .game-image.memory { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .game-image.puzzle { background: linear-gradient(135deg, #f093fb, #f5576c); }
+        .game-image.matching { background: linear-gradient(135deg, #4facfe, #00f2fe); }
+        .game-image.sequence { background: linear-gradient(135deg, #43e97b, #38f9d7); }
+        .game-image.words { background: linear-gradient(135deg, #fa709a, #fee140); }
+        .game-image.colors { background: linear-gradient(135deg, #a8edea, #fed6e3); }
+
+        .game-info {
+            padding: 25px;
+        }
+
+        .game-info h3 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--text-primary);
+        }
+
+        .game-info p {
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+            line-height: 1.6;
+        }
+
+        .difficulty {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-top: 15px;
+        }
+
+        .difficulty.easy { background: #E8F5E9; color: #2E7D32; }
+        .difficulty.medium { background: #FFF3E0; color: #E65100; }
+
+        /* Video Call Section */
+        .video-section {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .contacts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .contact-card {
+            background: white;
+            border-radius: var(--radius-md);
+            padding: 30px;
+            text-align: center;
+            box-shadow: var(--shadow-soft);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .contact-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .contact-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: white;
+            box-shadow: 0 4px 15px rgba(45, 90, 123, 0.3);
+        }
+
+        .contact-name {
+            font-size: 1.6rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .contact-relation {
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+        }
+
+        .call-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background: var(--success);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 30px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 0 auto;
+        }
+
+        .call-btn:hover {
+            background: #43A047;
+            transform: scale(1.05);
+        }
+
+        .add-contact-btn {
+            border: 3px dashed var(--primary-light);
+            background: transparent;
+            min-height: 280px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            color: var(--primary-light);
+            font-size: 1.4rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .add-contact-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: rgba(45, 90, 123, 0.05);
+        }
+
+        .add-contact-btn svg {
+            width: 60px;
+            height: 60px;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 40px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            animation: slideIn 0.3s ease;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: none;
+            border: none;
+            font-size: 2rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+
+        .modal h2 {
+            font-size: 2rem;
+            margin-bottom: 30px;
+            text-align: center;
+            color: var(--primary);
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--text-primary);
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 15px 20px;
+            font-size: 1.2rem;
+            border: 2px solid #E0E0E0;
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .form-submit {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 1.3rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .form-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(45, 90, 123, 0.3);
+        }
+
+        /* Memory Game */
+        .game-container {
+            display: none;
+            padding: 40px;
+            min-height: 100vh;
+            padding-bottom: 140px;
+        }
+
+        .game-container.active {
+            display: block;
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 800px;
+            margin: 0 auto 30px;
+        }
+
+        .game-back-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: none;
+            border: none;
+            font-size: 1.3rem;
+            color: var(--primary);
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .game-score {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .memory-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .memory-card {
+            aspect-ratio: 1;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            transform-style: preserve-3d;
+        }
+
+        .memory-card:hover:not(.flipped) {
+            transform: scale(1.05);
+        }
+
+        .memory-card.flipped {
+            background: white;
+            box-shadow: var(--shadow-soft);
+        }
+
+        .memory-card.matched {
+            background: linear-gradient(135deg, var(--success), #66BB6A);
+            color: white;
+        }
+
+        .card-back {
+            font-size: 2.5rem;
+            color: white;
+        }
+
+        .card-front {
+            display: none;
+        }
+
+        .memory-card.flipped .card-back,
+        .memory-card.matched .card-back {
+            display: none;
+        }
+
+        .memory-card.flipped .card-front,
+        .memory-card.matched .card-front {
+            display: block;
+        }
+
+        /* Puzzle Game Styles */
+        .puzzle-piece {
+            aspect-ratio: 1;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .puzzle-piece:hover:not(.empty) {
+            transform: scale(1.05);
+        }
+
+        .puzzle-piece.empty {
+            cursor: default;
+            box-shadow: none;
+        }
+
+        /* Matching Colors Game Styles */
+        .matching-color-btn {
+            aspect-ratio: 1;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+            min-height: 120px;
+        }
+
+        .matching-color-btn:hover {
+            transform: scale(1.05);
+        }
+
+        /* Sequence Game Styles */
+        .sequence-option-btn {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            border: none;
+            padding: 25px;
+            border-radius: 16px;
+            font-size: 2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(45, 90, 123, 0.3);
+        }
+
+        .sequence-option-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(45, 90, 123, 0.4);
+        }
+
+        /* Words Game Styles */
+        .word-letter {
+            aspect-ratio: 1;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .word-letter:hover {
+            transform: scale(1.05);
+        }
+
+        .word-letter.selected {
+            background: linear-gradient(135deg, var(--success), #66BB6A);
+            transform: scale(1.1);
+        }
+
+        /* Colors Listening Game Styles */
+        .color-listening-btn {
+            aspect-ratio: 1;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+            min-height: 140px;
+        }
+
+        .color-listening-btn:hover {
+            transform: scale(1.05);
+        }
+
+        /* Family Game Styles */
+        .family-option-btn {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            border: none;
+            padding: 20px;
+            border-radius: 16px;
+            font-size: 1.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(45, 90, 123, 0.3);
+        }
+
+        .family-option-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(45, 90, 123, 0.4);
+        }
+
+        /* Alert Popup */
+        .alert-popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 50px;
+            text-align: center;
+            z-index: 2000;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: pulse 0.5s ease;
+        }
+
+        .alert-popup.active {
+            display: block;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.05); }
+        }
+
+        .alert-icon {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            margin: 0 auto 25px;
+        }
+
+        .alert-icon.medicine { background: linear-gradient(135deg, #E53935, #EF5350); color: white; }
+        .alert-icon.shower { background: linear-gradient(135deg, #2196F3, #42A5F5); color: white; }
+        .alert-icon.meal { background: linear-gradient(135deg, #4CAF50, #66BB6A); color: white; }
+
+        .alert-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: var(--text-primary);
+        }
+
+        .alert-message {
+            font-size: 1.5rem;
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+        }
+
+        .alert-btn {
+            padding: 18px 50px;
+            font-size: 1.5rem;
+            font-weight: 600;
+            border: none;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            margin: 0 10px;
+            transition: all 0.3s;
+        }
+
+        .alert-btn.confirm {
+            background: var(--success);
+            color: white;
+        }
+
+        .alert-btn.snooze {
+            background: var(--warning);
+            color: white;
+        }
+
+        .alert-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 1999;
+        }
+
+        .alert-overlay.active {
+            display: block;
+        }
+
+        /* Settings Section */
+        .settings-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .settings-group {
+            background: white;
+            border-radius: var(--radius-md);
+            padding: 30px;
+            margin-bottom: 25px;
+            box-shadow: var(--shadow-soft);
+        }
+
+        .settings-group h3 {
+            font-size: 1.6rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .setting-item:last-child {
+            border-bottom: none;
+        }
+
+        .setting-label {
+            font-size: 1.3rem;
+        }
+
+        .setting-control input[type="range"] {
+            width: 200px;
+            height: 8px;
+            -webkit-appearance: none;
+            background: #ddd;
+            border-radius: 4px;
+        }
+
+        .setting-control input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 24px;
+            height: 24px;
+            background: var(--primary);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        /* Fullscreen Button */
+        .fullscreen-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: white;
+            border: none;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: var(--shadow-soft);
+            z-index: 99;
+            transition: all 0.3s ease;
+        }
+
+        .fullscreen-btn:hover {
+            transform: scale(1.1);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .fullscreen-btn svg {
+            width: 28px;
+            height: 28px;
+            color: var(--primary);
+        }
+
+        /* Tablet Responsiveness */
+        @media (max-width: 1024px) {
+            .main-container {
+                padding: 15px;
+            }
+            
+            .time-display {
+                font-size: 6rem;
+            }
+            
+            .date-display {
+                font-size: 1.8rem;
+            }
+            
+            .games-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .reminder-card {
+                padding: 18px;
+            }
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .main-container {
+                padding: 10px;
+                padding-bottom: 90px;
+            }
+
+            .time-display {
+                font-size: 4.5rem;
+            }
+
+            .date-display {
+                font-size: 1.4rem;
+            }
+            
+            .day-period {
+                font-size: 1.3rem;
+                padding: 8px 20px;
+            }
+            
+            .greeting {
+                font-size: 1.6rem;
+            }
+
+            .page-title {
+                font-size: 1.8rem;
+            }
+            
+            .games-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .game-card {
+                flex-direction: row;
+                text-align: right;
+            }
+            
+            .game-image {
+                width: 80px;
+                height: 80px;
+                font-size: 2.5rem;
+            }
+            
+            .reminders-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .reminder-card {
+                padding: 15px;
+            }
+            
+            .reminder-icon {
+                width: 50px;
+                height: 50px;
+                font-size: 1.5rem;
+            }
+
+            .nav-btn {
+                padding: 12px 15px;
+                min-width: 80px;
+            }
+
+            .nav-btn svg {
+                width: 30px;
+                height: 30px;
+            }
+
+            .nav-btn span {
+                font-size: 0.9rem;
+            }
+
+            .memory-grid {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 8px;
+            }
+            
+            .memory-card {
+                height: 70px;
+                font-size: 1.8rem;
+            }
+            
+            .modal {
+                margin: 10px;
+                padding: 20px;
+                max-height: 90vh;
+            }
+            
+            .contacts-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .setting-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .setting-control {
+                width: 100%;
+            }
+            
+            .setting-control select,
+            .setting-control input[type="text"],
+            .setting-control input[type="password"] {
+                width: 100%;
+            }
+            
+            /* Game containers mobile */
+            .game-header {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .puzzle-grid {
+                max-width: 280px !important;
+            }
+            
+            .puzzle-piece {
+                font-size: 2rem !important;
+            }
+            
+            .sequence-option-btn {
+                padding: 20px;
+                font-size: 1.5rem;
+            }
+            
+            .family-option-btn {
+                padding: 15px;
+                font-size: 1.3rem;
+            }
+            
+            #familyPhotoContainer {
+                width: 200px !important;
+                height: 200px !important;
+            }
+        }
+        
+        /* Small Mobile */
+        @media (max-width: 480px) {
+            .time-display {
+                font-size: 3.5rem;
+            }
+            
+            .date-display {
+                font-size: 1.2rem;
+            }
+            
+            .greeting {
+                font-size: 1.4rem;
+            }
+            
+            .memory-grid {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 5px;
+            }
+            
+            .memory-card {
+                height: 60px;
+                font-size: 1.5rem;
+            }
+            
+            .contacts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-btn svg {
+                width: 24px;
+                height: 24px;
+            }
+            
+            #familyPhotoContainer {
+                width: 150px !important;
+                height: 150px !important;
+            }
+        }
+        
+        /* Touch-friendly improvements for tablets and phones */
+        @media (pointer: coarse) {
+            .memory-card,
+            .puzzle-piece,
+            .matching-color-btn,
+            .color-listening-btn,
+            .sequence-option-btn,
+            .family-option-btn,
+            .word-letter,
+            .nav-btn,
+            .game-card,
+            .reminder-toggle,
+            button {
+                min-height: 44px;
+                min-width: 44px;
+            }
+            
+            .reminder-card {
+                min-height: 80px;
+            }
+            
+            input, select, textarea {
+                font-size: 16px !important; /* Prevents zoom on iOS */
+            }
+        }
+        
+        /* Landscape tablet */
+        @media (min-width: 768px) and (max-width: 1024px) and (orientation: landscape) {
+            .games-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .reminders-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .memory-grid {
+                max-width: 600px;
+                margin: 0 auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Fullscreen Button -->
+    <button class="fullscreen-btn" onclick="toggleFullscreen()" title="מסך מלא">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0-4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/>
+        </svg>
+    </button>
+
+    <!-- Main Clock Screen -->
+    <section class="page-section clock-screen active" id="clockPage">
+        <div class="clock-container">
+            <div class="greeting" id="greeting">בוקר טוב</div>
+            <div class="time-display" id="timeDisplay">12:00</div>
+            <div class="date-display" id="dateDisplay">יום ראשון, 15 בינואר 2024</div>
+            <div class="day-period" id="dayPeriod">בוקר</div>
+            <div class="hebrew-date" id="hebrewDate">ט"ו בשבט תשפ"ד</div>
+        </div>
+    </section>
+
+    <!-- Reminders Section -->
+    <section class="page-section" id="remindersPage">
+        <h1 class="page-title">⏰ תזכורות יומיות</h1>
+        <div class="reminders-grid" id="remindersGrid">
+            <!-- Reminders will be added here -->
+        </div>
+        <button class="add-reminder-btn" onclick="updateTimeSelector(); openModal('reminderModal')">
+            <svg width="30" height="30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            הוספת תזכורת חדשה
+        </button>
+    </section>
+
+    <!-- Games Section -->
+    <section class="page-section" id="gamesPage">
+        <h1 class="page-title">🎮 משחקי זיכרון</h1>
+        <div class="games-grid">
+            <div class="game-card" onclick="startMemoryGame()">
+                <div class="game-image memory">🧠</div>
+                <div class="game-info">
+                    <h3>משחק זיכרון</h3>
+                    <p>מצאו את הזוגות התואמים - משחק קלאסי לחיזוק הזיכרון</p>
+                    <span class="difficulty easy">קל</span>
+                </div>
+            </div>
+            <div class="game-card" onclick="startPuzzleGame()">
+                <div class="game-image puzzle">🧩</div>
+                <div class="game-info">
+                    <h3>פאזל</h3>
+                    <p>סדרו את החלקים למקומם הנכון</p>
+                    <span class="difficulty easy">קל</span>
+                </div>
+            </div>
+            <div class="game-card" onclick="startMatchingGame()">
+                <div class="game-image matching">🎯</div>
+                <div class="game-info">
+                    <h3>התאמת צבעים</h3>
+                    <p>התאימו צבעים זהים בזמן מוגבל</p>
+                    <span class="difficulty medium">בינוני</span>
+                </div>
+            </div>
+            <div class="game-card" onclick="startSequenceGame()">
+                <div class="game-image sequence">🔢</div>
+                <div class="game-info">
+                    <h3>סדרות מספרים</h3>
+                    <p>השלימו את הסדרה הנכונה</p>
+                    <span class="difficulty easy">קל</span>
+                </div>
+            </div>
+            <div class="game-card" onclick="startWordsGame()">
+                <div class="game-image words">📝</div>
+                <div class="game-info">
+                    <h3>מילים</h3>
+                    <p>מצאו מילים מוסתרות בטבלה</p>
+                    <span class="difficulty medium">בינוני</span>
+                </div>
+            </div>
+            <div class="game-card" onclick="startColorsGame()">
+                <div class="game-image colors">🌈</div>
+                <div class="game-info">
+                    <h3>הקשב ולחץ</h3>
+                    <p>שמע צבע ולחץ עליו</p>
+                    <span class="difficulty easy">קל</span>
+                </div>
+            </div>
+            <div class="game-card" onclick="startFamilyGame()">
+                <div class="game-image" style="background: linear-gradient(135deg, #ff6b6b, #feca57);">👨‍👩‍👧‍👦</div>
+                <div class="game-info">
+                    <h3>מי זה?</h3>
+                    <p>זהה את בני המשפחה בתמונות</p>
+                    <span class="difficulty easy">קל</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Video Calls Section -->
+    <section class="page-section" id="videoPage">
+        <h1 class="page-title">📞 שיחות וידאו</h1>
+        <div class="video-section">
+            <div class="contacts-grid" id="contactsGrid">
+                <!-- Contacts will be added here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Settings Section -->
+    <section class="page-section" id="settingsPage">
+        <h1 class="page-title">⚙️ הגדרות</h1>
+        <div class="settings-container">
+            <div class="settings-group">
+                <h3>🔊 צלילים והתראות</h3>
+                <div class="setting-item">
+                    <span class="setting-label">עוצמת צליל התראות</span>
+                    <div class="setting-control">
+                        <input type="range" min="0" max="100" value="80" id="alertVolume">
+                    </div>
+                </div>
+                <div class="setting-item">
+                    <span class="setting-label">צליל התראה</span>
+                    <div class="reminder-toggle active" onclick="this.classList.toggle('active')"></div>
+                </div>
+                <div class="setting-item">
+                    <span class="setting-label">קריאה קולית של התראות</span>
+                    <div class="reminder-toggle active" id="voiceEnabled" onclick="toggleVoice()"></div>
+                </div>
+                <div class="setting-item">
+                    <span class="setting-label">סוג קול</span>
+                    <div class="setting-control">
+                        <select id="voiceType" onchange="changeVoice()" style="padding: 10px 15px; border-radius: 8px; border: 2px solid #ddd; font-size: 1.1rem; min-width: 200px;">
+                            <option value="azure-female">👩 הילה - נשי עברי (Azure) ⭐⭐⭐</option>
+                            <option value="azure-male">👨 אברי - גברי עברי (Azure) ⭐⭐⭐</option>
+                            <option value="google-female">👩 נשי עברי (Google)</option>
+                            <option value="google-male">👨 גברי עברי (Google)</option>
+                            <option value="female-soft">👩 נשי עדין (מערכת)</option>
+                            <option value="male-soft">👨 גברי עדין (מערכת)</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="azureSettings" style="margin-top: 15px; padding: 20px; background: #e3f2fd; border-radius: 12px;">
+                    <h4 style="margin: 0 0 15px 0; color: #1565c0;">⚙️ הגדרות Azure (קול איכותי)</h4>
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">API Key:</label>
+                        <input type="password" id="azureApiKey" placeholder="הכנס את ה-API Key מ-Azure" 
+                               style="width: 100%; padding: 12px; border-radius: 8px; border: 2px solid #ddd; font-size: 1rem;"
+                               onchange="saveAzureSettings()">
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Region:</label>
+                        <input type="text" id="azureRegion" placeholder="לדוגמה: eastus" value="eastus"
+                               style="width: 100%; padding: 12px; border-radius: 8px; border: 2px solid #ddd; font-size: 1rem;"
+                               onchange="saveAzureSettings()">
+                    </div>
+                    <div style="background: #fff3cd; padding: 15px; border-radius: 8px; font-size: 0.9rem; color: #856404;">
+                        <strong>📋 איך להשיג API Key (חינם):</strong><br>
+                        1. היכנס ל-<a href="https://portal.azure.com" target="_blank" style="color: #0d6efd;">portal.azure.com</a><br>
+                        2. צור חשבון חינמי (אם אין לך)<br>
+                        3. חפש "Speech Services" וצור שירות חדש<br>
+                        4. בחר Tier: Free (F0) - 500,000 תווים בחודש חינם!<br>
+                        5. העתק את ה-Key מ-"Keys and Endpoint"
+                    </div>
+                </div>
+                <div id="googleVoiceNote" style="margin-top: 15px; padding: 10px 15px; background: #e8f5e9; border-radius: 8px; font-size: 0.95rem; color: #2e7d32;">
+                    💡 קולות Google עובדים ללא הגדרה נוספת (דורש אינטרנט)
+                </div>
+                <div class="setting-item">
+                    <span class="setting-label">מהירות דיבור</span>
+                    <div class="setting-control">
+                        <input type="range" min="50" max="120" value="85" id="voiceSpeed" onchange="updateVoiceSpeed()">
+                    </div>
+                </div>
+                <div class="setting-item">
+                    <button onclick="testVoice()" style="background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: white; border: none; padding: 12px 30px; border-radius: 10px; font-size: 1.1rem; cursor: pointer; font-weight: 600;">
+                        🔊 בדיקת קול
+                    </button>
+                    <button onclick="showAvailableVoices()" style="background: linear-gradient(135deg, #666, #888); color: white; border: none; padding: 12px 20px; border-radius: 10px; font-size: 1rem; cursor: pointer; margin-right: 10px;">
+                        📋 הצג קולות זמינים
+                    </button>
+                </div>
+                <div id="voicesList" style="display: none; margin-top: 15px; padding: 15px; background: #f5f5f5; border-radius: 10px; font-size: 0.95rem;">
+                </div>
+                <div style="margin-top: 15px; padding: 15px; background: #fff3cd; border-radius: 10px; font-size: 0.95rem; color: #856404;">
+                    💡 <strong>טיפ:</strong> להתקנת קולות נוספים ב-Windows 11:<br>
+                    הגדרות → זמן ושפה → דיבור → הוספת קולות<br>
+                    חפש "Hebrew" להוספת קולות בעברית
+                </div>
+            </div>
+            <div class="settings-group">
+                <h3>🖥️ תצוגה</h3>
+                <div class="setting-item">
+                    <span class="setting-label">פורמט שעון</span>
+                    <div class="setting-control">
+                        <select id="timeFormat" onchange="changeTimeFormat()" style="padding: 10px 15px; border-radius: 8px; border: 2px solid #ddd; font-size: 1.1rem; min-width: 180px;">
+                            <option value="24">24 שעות (14:30)</option>
+                            <option value="12">12 שעות (2:30 PM)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="setting-item">
+                    <span class="setting-label">גודל גופן</span>
+                    <div class="setting-control">
+                        <input type="range" min="80" max="150" value="100" id="fontSize" onchange="changeFontSize(this.value)">
+                    </div>
+                </div>
+                <div class="setting-item">
+                    <span class="setting-label">בהירות מסך</span>
+                    <div class="setting-control">
+                        <input type="range" min="50" max="100" value="100" id="brightness">
+                    </div>
+                </div>
+            </div>
+            <div class="settings-group">
+                <h3>👤 פרטים אישיים</h3>
+                <div class="setting-item">
+                    <span class="setting-label">שם המשתמש</span>
+                    <input type="text" value="אורח" id="userName" onchange="saveUserSettings()" style="width: 200px; padding: 10px; border-radius: 8px; border: 2px solid #ddd; font-size: 1.1rem;">
+                </div>
+                <div class="setting-item">
+                    <span class="setting-label">פנייה</span>
+                    <div class="setting-control">
+                        <select id="userGender" onchange="saveUserSettings()" style="padding: 10px 15px; border-radius: 8px; border: 2px solid #ddd; font-size: 1.1rem; min-width: 180px;">
+                            <option value="male">👨 גבר (אתה, עשית, הצלחת)</option>
+                            <option value="female">👩 אישה (את, עשית, הצלחת)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Memory Game Container -->
+    <div class="game-container" id="memoryGameContainer">
+        <div class="game-header">
+            <button class="game-back-btn" onclick="exitGame()">
+                <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                </svg>
+                חזרה למשחקים
+            </button>
+            <div class="game-score">זוגות שנמצאו: <span id="pairsFound">0</span> / <span id="totalPairs">8</span></div>
+        </div>
+        <h2 class="page-title">🧠 משחק זיכרון</h2>
+        <div class="memory-grid" id="memoryGrid">
+            <!-- Cards will be generated here -->
+        </div>
+    </div>
+
+    <!-- Puzzle Game Container -->
+    <div class="game-container" id="puzzleGameContainer">
+        <div class="game-header">
+            <button class="game-back-btn" onclick="exitGame()">
+                <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                </svg>
+                חזרה למשחקים
+            </button>
+            <button onclick="initPuzzleGame()" style="background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer;">🔄 התחל מחדש</button>
+        </div>
+        <h2 class="page-title">🧩 פאזל</h2>
+        <p style="text-align: center; font-size: 1.2rem; color: var(--text-secondary); margin-bottom: 20px;">סדר את המספרים מ-1 עד 8</p>
+        <div class="puzzle-grid" id="puzzleGrid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 350px; margin: 0 auto;">
+            <!-- Puzzle pieces will be generated here -->
+        </div>
+    </div>
+
+    <!-- Matching Colors Game Container -->
+    <div class="game-container" id="matchingGameContainer">
+        <div class="game-header">
+            <button class="game-back-btn" onclick="if(matchingTimer) clearInterval(matchingTimer); exitGame()">
+                <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                </svg>
+                חזרה למשחקים
+            </button>
+            <div class="game-score">ניקוד: <span id="matchingScore">0</span> | זמן: <span id="matchingTimer">30</span></div>
+        </div>
+        <h2 class="page-title">🎯 התאמת צבעים</h2>
+        <div style="text-align: center; margin-bottom: 30px;">
+            <p style="font-size: 1.5rem;">לחץ על הצבע:</p>
+            <p id="matchingTargetText" style="font-size: 3rem; font-weight: bold; color: var(--primary);"></p>
+        </div>
+        <div id="matchingColorsGrid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; max-width: 400px; margin: 0 auto;">
+            <!-- Colors will be generated here -->
+        </div>
+    </div>
+
+    <!-- Sequence Game Container -->
+    <div class="game-container" id="sequenceGameContainer">
+        <div class="game-header">
+            <button class="game-back-btn" onclick="exitGame()">
+                <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                </svg>
+                חזרה למשחקים
+            </button>
+            <div class="game-score">ניקוד: <span id="sequenceScore">0</span> / 5</div>
+        </div>
+        <h2 class="page-title">🔢 סדרות מספרים</h2>
+        <div style="text-align: center; margin-bottom: 30px;">
+            <p style="font-size: 1.3rem; margin-bottom: 20px;">מה המספר הבא בסדרה?</p>
+            <p id="sequenceDisplay" style="font-size: 2.5rem; font-weight: bold; color: var(--primary); direction: ltr;"></p>
+        </div>
+        <div id="sequenceOptions" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; max-width: 350px; margin: 0 auto;">
+            <!-- Options will be generated here -->
+        </div>
+    </div>
+
+    <!-- Words Game Container -->
+    <div class="game-container" id="wordsGameContainer">
+        <div class="game-header">
+            <button class="game-back-btn" onclick="exitGame()">
+                <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                </svg>
+                חזרה למשחקים
+            </button>
+            <div class="game-score">מילים שנמצאו: <span id="wordsScore">0</span> / 5</div>
+        </div>
+        <h2 class="page-title">📝 מצא את המילה</h2>
+        <div style="text-align: center; margin-bottom: 20px;">
+            <p style="font-size: 1.3rem;">מצא את המילה:</p>
+            <p id="wordsTargetText" style="font-size: 2.5rem; font-weight: bold; color: var(--primary);"></p>
+        </div>
+        <div style="text-align: center; margin-bottom: 20px;">
+            <p style="font-size: 1.5rem; min-height: 40px;" id="wordsCurrentWord"></p>
+            <button onclick="clearWordSelection()" style="background: var(--warning); color: white; border: none; padding: 10px 25px; border-radius: 8px; cursor: pointer; font-size: 1.1rem;">🔄 נקה בחירה</button>
+        </div>
+        <div id="wordsLettersGrid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; max-width: 350px; margin: 0 auto;">
+            <!-- Letters will be generated here -->
+        </div>
+    </div>
+
+    <!-- Colors Listening Game Container -->
+    <div class="game-container" id="colorsGameContainer">
+        <div class="game-header">
+            <button class="game-back-btn" onclick="exitGame()">
+                <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                </svg>
+                חזרה למשחקים
+            </button>
+            <div class="game-score">ניקוד: <span id="colorsListeningScore">0</span> / 5</div>
+        </div>
+        <h2 class="page-title">🌈 הקשב ולחץ</h2>
+        <div style="text-align: center; margin-bottom: 30px;">
+            <p style="font-size: 1.3rem; margin-bottom: 15px;">הקשב להוראה ולחץ על הצבע הנכון</p>
+            <button onclick="repeatColorInstruction()" style="background: var(--primary); color: white; border: none; padding: 12px 30px; border-radius: 8px; cursor: pointer; font-size: 1.2rem;">🔊 השמע שוב</button>
+        </div>
+        <div id="colorsListeningGrid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; max-width: 400px; margin: 0 auto;">
+            <!-- Colors will be generated here -->
+        </div>
+    </div>
+
+    <!-- Family Recognition Game Container -->
+    <div class="game-container" id="familyGameContainer">
+        <div class="game-header">
+            <button class="game-back-btn" onclick="exitGame()">
+                <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                </svg>
+                חזרה למשחקים
+            </button>
+            <div style="display: flex; gap: 15px;">
+                <button onclick="renderFamilyMembersList(); openModal('familySettingsModal')" style="background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 1rem;">⚙️ הגדרת בני משפחה</button>
+                <div class="game-score">ניקוד: <span id="familyScore">0</span> / 5</div>
+            </div>
+        </div>
+        <h2 class="page-title">👨‍👩‍👧‍👦 מי זה?</h2>
+        
+        <div id="familyGameContent">
+            <div id="familyGameActive" style="display: none;">
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <div id="familyPhotoContainer" style="width: 250px; height: 250px; margin: 0 auto 20px; border-radius: 50%; overflow: hidden; box-shadow: 0 8px 30px rgba(0,0,0,0.2); background: #e0e0e0; display: flex; align-items: center; justify-content: center;">
+                        <img id="familyPhoto" src="" style="width: 100%; height: 100%; object-fit: cover; display: none;">
+                        <span id="familyPhotoPlaceholder" style="font-size: 5rem;">👤</span>
+                    </div>
+                    <p style="font-size: 1.8rem; font-weight: 600; color: var(--primary);">מי בתמונה?</p>
+                </div>
+                <div id="familyOptions" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; max-width: 500px; margin: 0 auto;">
+                    <!-- Options will be generated here -->
+                </div>
+            </div>
+            
+            <div id="familyGameSetup" style="text-align: center; padding: 40px;">
+                <div style="font-size: 5rem; margin-bottom: 20px;">👨‍👩‍👧‍👦</div>
+                <h3 style="font-size: 1.8rem; margin-bottom: 15px; color: var(--primary);">הגדר את בני המשפחה</h3>
+                <p style="font-size: 1.2rem; color: var(--text-secondary); margin-bottom: 30px;">
+                    כדי לשחק, צריך קודם להוסיף תמונות ושמות של בני משפחה
+                </p>
+                <button onclick="renderFamilyMembersList(); openModal('familySettingsModal')" style="background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: white; border: none; padding: 18px 40px; border-radius: 12px; font-size: 1.3rem; font-weight: 600; cursor: pointer;">
+                    ➕ הוסף בני משפחה
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Family Settings Modal -->
+    <div class="modal-overlay" id="familySettingsModal">
+        <div class="modal" style="max-width: 700px;">
+            <button class="modal-close" onclick="closeModal('familySettingsModal')">×</button>
+            <h2>👨‍👩‍👧‍👦 הגדרת בני משפחה</h2>
+            
+            <div id="familyMembersList" style="margin-bottom: 25px; max-height: 300px; overflow-y: auto;">
+                <!-- Family members will be listed here -->
+            </div>
+            
+            <div style="background: #f5f5f5; padding: 20px; border-radius: 12px;">
+                <h4 style="margin-bottom: 15px;">➕ הוסף בן משפחה חדש</h4>
+                <div class="form-group">
+                    <label>שם</label>
+                    <input type="text" id="newFamilyName" placeholder="לדוגמה: דוד">
+                </div>
+                <div class="form-group">
+                    <label>קרבה</label>
+                    <input type="text" id="newFamilyRelation" placeholder="לדוגמה: בן, נכד, אחות">
+                </div>
+                <div class="form-group">
+                    <label>תמונה</label>
+                    <input type="file" id="newFamilyPhoto" accept="image/*" onchange="previewFamilyPhoto(this)" style="display: none;">
+                    <div style="display: flex; gap: 15px; align-items: center;">
+                        <div id="newFamilyPhotoPreview" style="width: 80px; height: 80px; border-radius: 50%; background: #e0e0e0; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                            <span style="font-size: 2rem;">👤</span>
+                        </div>
+                        <button type="button" onclick="document.getElementById('newFamilyPhoto').click()" style="background: var(--primary); color: white; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer;">
+                            📷 בחר תמונה
+                        </button>
+                    </div>
+                </div>
+                <button onclick="addFamilyMember()" style="width: 100%; background: linear-gradient(135deg, var(--success), #66BB6A); color: white; border: none; padding: 15px; border-radius: 10px; font-size: 1.2rem; font-weight: 600; cursor: pointer;">
+                    ✓ הוסף
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Menu -->
+    <nav class="nav-menu">
+        <button class="nav-btn active" onclick="showPage('clockPage')" data-page="clockPage">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span>שעון</span>
+        </button>
+        <button class="nav-btn" onclick="showPage('remindersPage')" data-page="remindersPage">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+            </svg>
+            <span>תזכורות</span>
+        </button>
+        <button class="nav-btn" onclick="showPage('gamesPage')" data-page="gamesPage">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span>משחקים</span>
+        </button>
+        <button class="nav-btn" onclick="showPage('videoPage')" data-page="videoPage">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+            </svg>
+            <span>שיחות</span>
+        </button>
+        <button class="nav-btn" onclick="showPage('settingsPage')" data-page="settingsPage">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+            <span>הגדרות</span>
+        </button>
+    </nav>
+
+    <!-- Add Reminder Modal -->
+    <div class="modal-overlay" id="reminderModal">
+        <div class="modal">
+            <button class="modal-close" onclick="closeReminderModal()">×</button>
+            <h2 id="reminderModalTitle">הוספת תזכורת חדשה</h2>
+            <form onsubmit="addReminder(event)">
+                <div class="form-group">
+                    <label>סוג התזכורת</label>
+                    <select id="reminderType" required>
+                        <option value="medicine">💊 תרופות</option>
+                        <option value="shower">🚿 מקלחת</option>
+                        <option value="meal">🍽️ ארוחה</option>
+                        <option value="water">💧 שתיית מים</option>
+                        <option value="exercise">🏃 פעילות גופנית</option>
+                        <option value="sleep">😴 שעת שינה</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>תיאור</label>
+                    <input type="text" id="reminderTitle" placeholder="לדוגמה: תרופת לחץ דם" required>
+                </div>
+                <div class="form-group">
+                    <label>שעה</label>
+                    <div style="display: flex; gap: 10px; align-items: center; justify-content: center;">
+                        <select id="reminderMinute" style="padding: 15px 20px; font-size: 1.3rem; border: 2px solid #E0E0E0; border-radius: 12px; min-width: 80px; text-align: center;" required>
+                            <option value="00">00</option>
+                            <option value="05">05</option>
+                            <option value="10">10</option>
+                            <option value="15">15</option>
+                            <option value="20">20</option>
+                            <option value="25">25</option>
+                            <option value="30">30</option>
+                            <option value="35">35</option>
+                            <option value="40">40</option>
+                            <option value="45">45</option>
+                            <option value="50">50</option>
+                            <option value="55">55</option>
+                        </select>
+                        <span style="font-size: 1.5rem; font-weight: bold;">:</span>
+                        <select id="reminderHour" style="padding: 15px 20px; font-size: 1.3rem; border: 2px solid #E0E0E0; border-radius: 12px; min-width: 80px; text-align: center;" required>
+                        </select>
+                        <select id="reminderPeriod" style="padding: 15px 20px; font-size: 1.3rem; border: 2px solid #E0E0E0; border-radius: 12px; min-width: 80px; display: none;">
+                            <option value="AM">AM</option>
+                            <option value="PM">PM</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="form-submit" id="reminderSubmitBtn">שמירת תזכורת</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Contact Modal -->
+    <div class="modal-overlay" id="contactModal">
+        <div class="modal">
+            <button class="modal-close" onclick="closeModal('contactModal')">×</button>
+            <h2>הוספת איש קשר</h2>
+            <form onsubmit="addContact(event)">
+                <div class="form-group">
+                    <label>שם</label>
+                    <input type="text" id="contactName" placeholder="לדוגמה: שרה" required>
+                </div>
+                <div class="form-group">
+                    <label>קרבה</label>
+                    <input type="text" id="contactRelation" placeholder="לדוגמה: בת">
+                </div>
+                <div class="form-group">
+                    <label>מספר טלפון / קישור לשיחה</label>
+                    <input type="text" id="contactPhone" placeholder="לדוגמה: 050-1234567">
+                </div>
+                <button type="submit" class="form-submit">שמירת איש קשר</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Alert Popup -->
+    <div class="alert-overlay" id="alertOverlay"></div>
+    <div class="alert-popup" id="alertPopup">
+        <div class="alert-icon medicine" id="alertIcon">💊</div>
+        <h2 class="alert-title" id="alertTitle">זמן לתרופות!</h2>
+        <p class="alert-message" id="alertMessage">הגיע הזמן לקחת את התרופה</p>
+        <button class="alert-btn confirm" onclick="dismissAlert()">סיימתי ✓</button>
+        <button class="alert-btn snooze" onclick="snoozeAlert()">תזכיר בעוד 10 דקות</button>
+    </div>
+
+    <script>
+        // Hebrew months and days
+        const hebrewDays = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
+        const hebrewMonths = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
+
+        // Time format setting
+        let timeFormat = '24'; // '24' or '12'
+
+        function loadTimeFormat() {
+            const saved = localStorage.getItem('timeFormat');
+            if (saved) {
+                timeFormat = saved;
+                document.getElementById('timeFormat').value = timeFormat;
+            }
+        }
+
+        function changeTimeFormat() {
+            timeFormat = document.getElementById('timeFormat').value;
+            localStorage.setItem('timeFormat', timeFormat);
+            updateClock();
+            renderReminders();
+            updateTimeSelector(); // Update the time selector in modal
+        }
+        
+        // Update time selector based on format
+        function updateTimeSelector() {
+            const hourSelect = document.getElementById('reminderHour');
+            const periodSelect = document.getElementById('reminderPeriod');
+            
+            if (!hourSelect) return;
+            
+            // Save current selection if exists
+            const currentHour = hourSelect.value;
+            
+            hourSelect.innerHTML = '';
+            
+            if (timeFormat === '12') {
+                // 12-hour format
+                for (let i = 1; i <= 12; i++) {
+                    const option = document.createElement('option');
+                    option.value = i.toString();
+                    option.textContent = i.toString();
+                    hourSelect.appendChild(option);
+                }
+                periodSelect.style.display = 'block';
+            } else {
+                // 24-hour format
+                for (let i = 0; i <= 23; i++) {
+                    const option = document.createElement('option');
+                    option.value = i.toString().padStart(2, '0');
+                    option.textContent = i.toString().padStart(2, '0');
+                    hourSelect.appendChild(option);
+                }
+                periodSelect.style.display = 'none';
+            }
+            
+            // Restore selection if valid
+            if (currentHour) {
+                hourSelect.value = currentHour;
+            }
+        }
+        
+        // Get time from custom selector in 24h format (for storage)
+        function getSelectedTime() {
+            const hour = document.getElementById('reminderHour').value;
+            const minute = document.getElementById('reminderMinute').value;
+            const period = document.getElementById('reminderPeriod').value;
+            
+            let hour24;
+            if (timeFormat === '12') {
+                hour24 = parseInt(hour);
+                if (period === 'PM' && hour24 !== 12) {
+                    hour24 += 12;
+                } else if (period === 'AM' && hour24 === 12) {
+                    hour24 = 0;
+                }
+            } else {
+                hour24 = parseInt(hour);
+            }
+            
+            return `${hour24.toString().padStart(2, '0')}:${minute}`;
+        }
+        
+        // Set time selector from 24h format string
+        function setTimeSelector(timeStr) {
+            const [hours, minutes] = timeStr.split(':').map(Number);
+            
+            document.getElementById('reminderMinute').value = minutes.toString().padStart(2, '0');
+            
+            if (timeFormat === '12') {
+                let hour12 = hours % 12 || 12;
+                document.getElementById('reminderHour').value = hour12.toString();
+                document.getElementById('reminderPeriod').value = hours >= 12 ? 'PM' : 'AM';
+            } else {
+                document.getElementById('reminderHour').value = hours.toString().padStart(2, '0');
+            }
+        }
+
+        function formatTime(hours, minutes) {
+            if (timeFormat === '12') {
+                const period = hours >= 12 ? 'PM' : 'AM';
+                const hour12 = hours % 12 || 12;
+                return `${hour12}:${minutes.toString().padStart(2, '0')} ${period}`;
+            } else {
+                return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+            }
+        }
+
+        function formatTimeFromString(timeStr) {
+            // Convert "HH:MM" to display format
+            const [hours, minutes] = timeStr.split(':').map(Number);
+            return formatTime(hours, minutes);
+        }
+
+        // Default reminders
+        let reminders = [
+            { id: 1, type: 'medicine', title: 'תרופת בוקר', time: '08:00', active: true },
+            { id: 2, type: 'shower', title: 'מקלחת', time: '09:00', active: true },
+            { id: 3, type: 'meal', title: 'ארוחת צהריים', time: '12:30', active: true },
+            { id: 4, type: 'medicine', title: 'תרופת צהריים', time: '13:00', active: true },
+            { id: 5, type: 'water', title: 'שתיית מים', time: '15:00', active: true },
+            { id: 6, type: 'meal', title: 'ארוחת ערב', time: '19:00', active: true },
+            { id: 7, type: 'medicine', title: 'תרופת ערב', time: '21:00', active: true },
+            { id: 8, type: 'sleep', title: 'שעת שינה', time: '22:00', active: true }
+        ];
+
+        // Default contacts
+        let contacts = [
+            { id: 1, name: 'דוד', relation: 'בן', phone: '050-1234567', initials: 'ד' },
+            { id: 2, name: 'רחל', relation: 'בת', phone: '050-7654321', initials: 'ר' },
+            { id: 3, name: 'משה', relation: 'נכד', phone: '052-1111111', initials: 'מ' }
+        ];
+
+        // Update clock
+        function updateClock() {
+            const now = new Date();
+            const hours = now.getHours();
+            const minutes = now.getMinutes();
+            
+            document.getElementById('timeDisplay').textContent = formatTime(hours, minutes);
+            
+            // Update date
+            const dayName = hebrewDays[now.getDay()];
+            const day = now.getDate();
+            const month = hebrewMonths[now.getMonth()];
+            const year = now.getFullYear();
+            document.getElementById('dateDisplay').textContent = `יום ${dayName}, ${day} ב${month} ${year}`;
+            
+            // Update greeting and period
+            const hour = now.getHours();
+            let greeting, period;
+            if (hour >= 5 && hour < 12) {
+                greeting = 'בוקר טוב ☀️';
+                period = 'בוקר';
+            } else if (hour >= 12 && hour < 17) {
+                greeting = 'צהריים טובים 🌤️';
+                period = 'צהריים';
+            } else if (hour >= 17 && hour < 21) {
+                greeting = 'ערב טוב 🌅';
+                period = 'ערב';
+            } else {
+                greeting = 'לילה טוב 🌙';
+                period = 'לילה';
+            }
+            document.getElementById('greeting').textContent = greeting;
+            document.getElementById('dayPeriod').textContent = period;
+            
+            // Check reminders (always use 24h format for comparison)
+            const currentTime = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+            checkReminders(currentTime);
+        }
+
+        // Check reminders
+        function checkReminders(currentTime) {
+            reminders.forEach(reminder => {
+                if (reminder.active && reminder.time === currentTime) {
+                    showAlert(reminder);
+                }
+            });
+        }
+
+        // Show alert
+        function showAlert(reminder) {
+            const icons = {
+                medicine: '💊',
+                shower: '🚿',
+                meal: '🍽️',
+                water: '💧',
+                exercise: '🏃',
+                sleep: '😴'
+            };
+            const messages = {
+                medicine: 'הגיע הזמן לקחת את התרופה',
+                shower: 'הגיע הזמן להתקלח',
+                meal: 'הגיע הזמן לאכול',
+                water: 'הגיע הזמן לשתות מים',
+                exercise: 'הגיע הזמן לפעילות גופנית',
+                sleep: 'הגיע הזמן ללכת לישון'
+            };
+            
+            document.getElementById('alertIcon').textContent = icons[reminder.type];
+            document.getElementById('alertIcon').className = `alert-icon ${reminder.type}`;
+            document.getElementById('alertTitle').textContent = reminder.title;
+            document.getElementById('alertMessage').textContent = messages[reminder.type];
+            
+            document.getElementById('alertOverlay').classList.add('active');
+            document.getElementById('alertPopup').classList.add('active');
+            
+            // Play sound if enabled
+            playAlertSound();
+            
+            // Speak the reminder
+            speakReminder(reminder.title);
+        }
+
+        function playAlertSound() {
+            // Create a pleasant chime sound
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6 - pleasant chime
+            
+            notes.forEach((freq, index) => {
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.value = freq;
+                oscillator.type = 'sine';
+                gainNode.gain.value = 0.2;
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5 + index * 0.15);
+                
+                oscillator.start(audioContext.currentTime + index * 0.15);
+                oscillator.stop(audioContext.currentTime + 0.6 + index * 0.15);
+            });
+        }
+
+        function playSuccessSound() {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const notes = [392, 523.25, 659.25, 783.99]; // G4, C5, E5, G5 - victory sound
+            
+            notes.forEach((freq, index) => {
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.value = freq;
+                oscillator.type = 'triangle';
+                gainNode.gain.value = 0.25;
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4 + index * 0.1);
+                
+                oscillator.start(audioContext.currentTime + index * 0.1);
+                oscillator.stop(audioContext.currentTime + 0.5 + index * 0.1);
+            });
+        }
+
+        function playMatchSound() {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = 880;
+            oscillator.type = 'sine';
+            gainNode.gain.value = 0.2;
+            
+            oscillator.start();
+            oscillator.frequency.exponentialRampToValueAtTime(1318.51, audioContext.currentTime + 0.15);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+            setTimeout(() => oscillator.stop(), 300);
+        }
+
+        function playWrongSound() {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = 200;
+            oscillator.type = 'sine';
+            gainNode.gain.value = 0.15;
+            
+            oscillator.start();
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+            setTimeout(() => oscillator.stop(), 200);
+        }
+
+        // User settings
+        let userSettings = {
+            name: 'אורח',
+            gender: 'male'
+        };
+
+        function loadUserSettings() {
+            const saved = localStorage.getItem('userSettings');
+            if (saved) {
+                userSettings = JSON.parse(saved);
+                document.getElementById('userName').value = userSettings.name;
+                document.getElementById('userGender').value = userSettings.gender;
+            }
+        }
+
+        function saveUserSettings() {
+            userSettings.name = document.getElementById('userName').value;
+            userSettings.gender = document.getElementById('userGender').value;
+            localStorage.setItem('userSettings', JSON.stringify(userSettings));
+        }
+
+        // Hebrew encouragement messages - gender specific
+        const encouragementMessages = {
+            gameStart: {
+                male: [
+                    'בהצלחה!',
+                    'אני בטוחה שתצליח!',
+                    'בוא נשחק יחד!',
+                    'יאללה, אני איתך!'
+                ],
+                female: [
+                    'בהצלחה!',
+                    'אני בטוחה שתצליחי!',
+                    'בואי נשחק יחד!',
+                    'יאללה, אני איתך!'
+                ]
+            },
+            matchFound: {
+                male: [
+                    'כל הכבוד!',
+                    'מצוין מאוד!',
+                    'יופי של עבודה!',
+                    'נהדר!',
+                    'מעולה!',
+                    'איזה יופי!',
+                    'וואו, מדהים!',
+                    'נפלא מאוד!',
+                    'אתה כוכב!',
+                    'איזה זיכרון טוב יש לך!'
+                ],
+                female: [
+                    'כל הכבוד!',
+                    'מצוין מאוד!',
+                    'יופי של עבודה!',
+                    'נהדר!',
+                    'מעולה!',
+                    'איזה יופי!',
+                    'וואו, מדהים!',
+                    'נפלא מאוד!',
+                    'את כוכבה!',
+                    'איזה זיכרון טוב יש לך!'
+                ]
+            },
+            wrongMatch: {
+                male: [
+                    'לא נורא, נסה שוב',
+                    'בסדר גמור, עוד פעם',
+                    'זה בסדר, המשך',
+                    'קדימה, תנסה שוב'
+                ],
+                female: [
+                    'לא נורא, נסי שוב',
+                    'בסדר גמור, עוד פעם',
+                    'זה בסדר, המשיכי',
+                    'קדימה, תנסי שוב'
+                ]
+            },
+            gameWin: {
+                male: [
+                    'ניצחת! איזה כיף!',
+                    'מדהים! אני כל כך גאה בך!',
+                    'אלוף! עשית את זה!',
+                    'מושלם! כל הכבוד!'
+                ],
+                female: [
+                    'ניצחת! איזה כיף!',
+                    'מדהים! אני כל כך גאה בך!',
+                    'אלופה! עשית את זה!',
+                    'מושלם! כל הכבוד!'
+                ]
+            },
+            reminderDone: {
+                male: [
+                    'יופי, סיימת!',
+                    'מעולה!',
+                    'כל הכבוד!',
+                    'נהדר, אני גאה בך!'
+                ],
+                female: [
+                    'יופי, סיימת!',
+                    'מעולה!',
+                    'כל הכבוד!',
+                    'נהדר, אני גאה בך!'
+                ]
+            },
+            greeting: {
+                male: [
+                    'שיהיה לך יום נפלא!',
+                    'יום טוב!',
+                    'שמחה לראות אותך!'
+                ],
+                female: [
+                    'שיהיה לך יום נפלא!',
+                    'יום טוב!',
+                    'שמחה לראות אותך!'
+                ]
+            }
+        };
+
+        function getRandomMessage(category) {
+            const gender = userSettings.gender || 'male';
+            const messages = encouragementMessages[category][gender];
+            return messages[Math.floor(Math.random() * messages.length)];
+        }
+
+        // Voice settings
+        let voiceSettings = {
+            enabled: true,
+            type: 'azure-female',
+            speed: 85
+        };
+
+        // Azure settings
+        let azureSettings = {
+            apiKey: '',
+            region: 'eastus'
+        };
+
+        const voiceProfiles = {
+            'azure-female': { provider: 'azure', voice: 'he-IL-HilaNeural', gender: 'female' },
+            'azure-male': { provider: 'azure', voice: 'he-IL-AvriNeural', gender: 'male' },
+            'google-female': { provider: 'google', gender: 'female' },
+            'google-male': { provider: 'google', gender: 'male' },
+            'female-soft': { provider: 'system', pitch: 1.8, rate: 0.75, volume: 0.85 },
+            'male-soft': { provider: 'system', pitch: 0.85, rate: 0.8, volume: 0.85 }
+        };
+
+        function loadVoiceSettings() {
+            const saved = localStorage.getItem('voiceSettings');
+            if (saved) {
+                voiceSettings = JSON.parse(saved);
+                document.getElementById('voiceType').value = voiceSettings.type;
+                document.getElementById('voiceSpeed').value = voiceSettings.speed;
+                if (!voiceSettings.enabled) {
+                    document.getElementById('voiceEnabled').classList.remove('active');
+                }
+            }
+            
+            // Load Azure settings
+            const azureSaved = localStorage.getItem('azureSettings');
+            if (azureSaved) {
+                azureSettings = JSON.parse(azureSaved);
+                document.getElementById('azureApiKey').value = azureSettings.apiKey;
+                document.getElementById('azureRegion').value = azureSettings.region;
+            }
+            
+            updateVoiceSettingsUI();
+        }
+
+        function saveVoiceSettings() {
+            localStorage.setItem('voiceSettings', JSON.stringify(voiceSettings));
+        }
+
+        function saveAzureSettings() {
+            azureSettings.apiKey = document.getElementById('azureApiKey').value;
+            azureSettings.region = document.getElementById('azureRegion').value;
+            localStorage.setItem('azureSettings', JSON.stringify(azureSettings));
+        }
+
+        function updateVoiceSettingsUI() {
+            const isAzure = voiceSettings.type.startsWith('azure');
+            document.getElementById('azureSettings').style.display = isAzure ? 'block' : 'none';
+        }
+
+        function toggleVoice() {
+            const toggle = document.getElementById('voiceEnabled');
+            toggle.classList.toggle('active');
+            voiceSettings.enabled = toggle.classList.contains('active');
+            saveVoiceSettings();
+        }
+
+        function changeVoice() {
+            voiceSettings.type = document.getElementById('voiceType').value;
+            saveVoiceSettings();
+            updateVoiceSettingsUI();
+            testVoice();
+        }
+
+        function updateVoiceSpeed() {
+            voiceSettings.speed = parseInt(document.getElementById('voiceSpeed').value);
+            saveVoiceSettings();
+        }
+
+        function testVoice() {
+            const isFemale = voiceSettings.type.includes('female');
+            const testText = isFemale ? 'שלום! זוהי בדיקת קול נשי. איך אני נשמעת?' : 'שלום! זוהי בדיקת קול גברי. איך אני נשמע?';
+            speakHebrew(testText);
+        }
+
+        // Azure Neural TTS
+        async function speakWithAzure(text, voiceName) {
+            if (!azureSettings.apiKey) {
+                console.log('Azure API key not set');
+                throw new Error('Azure API key not configured');
+            }
+
+            const tokenUrl = `https://${azureSettings.region}.api.cognitive.microsoft.com/sts/v1.0/issueToken`;
+            const ttsUrl = `https://${azureSettings.region}.tts.speech.microsoft.com/cognitiveservices/v1`;
+
+            try {
+                // Get access token
+                const tokenResponse = await fetch(tokenUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Ocp-Apim-Subscription-Key': azureSettings.apiKey,
+                        'Content-Length': '0'
+                    }
+                });
+
+                if (!tokenResponse.ok) {
+                    throw new Error('Failed to get Azure token');
+                }
+
+                const accessToken = await tokenResponse.text();
+
+                // Create SSML
+                const rate = ((voiceSettings.speed - 100) / 100).toFixed(1);
+                const ssml = `
+                    <speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xml:lang='he-IL'>
+                        <voice name='${voiceName}'>
+                            <prosody rate='${rate >= 0 ? '+' : ''}${rate}%'>
+                                ${text}
+                            </prosody>
+                        </voice>
+                    </speak>
+                `;
+
+                // Get audio
+                const audioResponse = await fetch(ttsUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Content-Type': 'application/ssml+xml',
+                        'X-Microsoft-OutputFormat': 'audio-16khz-128kbitrate-mono-mp3'
+                    },
+                    body: ssml
+                });
+
+                if (!audioResponse.ok) {
+                    throw new Error('Failed to get Azure audio');
+                }
+
+                const audioBlob = await audioResponse.blob();
+                const audioUrl = URL.createObjectURL(audioBlob);
+                const audio = new Audio(audioUrl);
+
+                return new Promise((resolve, reject) => {
+                    audio.onended = () => {
+                        URL.revokeObjectURL(audioUrl);
+                        resolve();
+                    };
+                    audio.onerror = reject;
+                    audio.play().catch(reject);
+                });
+
+            } catch (error) {
+                console.error('Azure TTS error:', error);
+                throw error;
+            }
+        }
+
+        // Google TTS using free API
+        async function speakWithGoogle(text, gender = 'female') {
+            try {
+                const encodedText = encodeURIComponent(text);
+                const url = `https://translate.google.com/translate_tts?ie=UTF-8&tl=he&client=tw-ob&q=${encodedText}`;
+                
+                const audio = new Audio(url);
+                audio.playbackRate = voiceSettings.speed / 100;
+                
+                return new Promise((resolve, reject) => {
+                    audio.onended = resolve;
+                    audio.onerror = () => {
+                        console.log('Google TTS failed');
+                        reject();
+                    };
+                    audio.play().catch(reject);
+                });
+            } catch (error) {
+                console.error('Google TTS error:', error);
+                throw error;
+            }
+        }
+
+        async function speakHebrew(text, rateOverride = null) {
+            if (!voiceSettings.enabled) return;
+            
+            const profile = voiceProfiles[voiceSettings.type];
+            
+            // Try Azure first
+            if (profile.provider === 'azure') {
+                try {
+                    await speakWithAzure(text, profile.voice);
+                    return;
+                } catch (error) {
+                    console.log('Azure TTS failed, trying Google...');
+                }
+            }
+            
+            // Try Google
+            if (profile.provider === 'google' || profile.provider === 'azure') {
+                try {
+                    await speakWithGoogle(text, profile.gender);
+                    return;
+                } catch (error) {
+                    console.log('Google TTS failed, using system voice');
+                }
+            }
+            
+            // Fallback to system speech synthesis
+            if (!('speechSynthesis' in window)) return;
+            
+            speechSynthesis.cancel();
+            
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'he-IL';
+            utterance.pitch = profile.pitch || 1.0;
+            utterance.volume = profile.volume || 1.0;
+            utterance.rate = rateOverride || ((profile.rate || 0.9) * (voiceSettings.speed / 100));
+            
+            const voices = speechSynthesis.getVoices();
+            const hebrewVoice = voices.find(v => v.lang.includes('he'));
+            if (hebrewVoice) {
+                utterance.voice = hebrewVoice;
+            }
+            
+            speechSynthesis.speak(utterance);
+        }
+
+        function speakReminder(text) {
+            speakHebrew(text);
+        }
+
+        function speakEncouragement(category) {
+            const message = getRandomMessage(category);
+            speakHebrew(message);
+            return message;
+        }
+        
+        // Pre-load voices - important for Windows
+        let voicesLoaded = false;
+        function loadVoices() {
+            const voices = speechSynthesis.getVoices();
+            if (voices.length > 0) {
+                voicesLoaded = true;
+                console.log('Available voices:', voices.map(v => v.name + ' (' + v.lang + ')'));
+            }
+        }
+        
+        function showAvailableVoices() {
+            const voices = speechSynthesis.getVoices();
+            const voicesList = document.getElementById('voicesList');
+            
+            if (voices.length === 0) {
+                voicesList.innerHTML = '<p>לא נמצאו קולות. נסה לרענן את הדף.</p>';
+            } else {
+                const hebrewVoices = voices.filter(v => v.lang.includes('he'));
+                const otherVoices = voices.filter(v => !v.lang.includes('he'));
+                
+                let html = '<strong>קולות בעברית:</strong><br>';
+                if (hebrewVoices.length > 0) {
+                    html += hebrewVoices.map(v => `• ${v.name}`).join('<br>');
+                } else {
+                    html += '❌ לא נמצאו קולות בעברית<br>';
+                    html += '<span style="color: #d63384;">להתקנה: הגדרות Windows → זמן ושפה → דיבור → הוספת קולות</span>';
+                }
+                
+                html += '<br><br><strong>קולות אחרים (לבדיקה):</strong><br>';
+                html += otherVoices.slice(0, 10).map(v => `• ${v.name} (${v.lang})`).join('<br>');
+                if (otherVoices.length > 10) {
+                    html += `<br>... ועוד ${otherVoices.length - 10} קולות`;
+                }
+                
+                voicesList.innerHTML = html;
+            }
+            
+            voicesList.style.display = voicesList.style.display === 'none' ? 'block' : 'none';
+        }
+        
+        if ('speechSynthesis' in window) {
+            loadVoices();
+            speechSynthesis.onvoiceschanged = loadVoices;
+            // Fallback for some browsers
+            setTimeout(loadVoices, 100);
+            setTimeout(loadVoices, 1000);
+        }
+
+        function dismissAlert() {
+            document.getElementById('alertOverlay').classList.remove('active');
+            document.getElementById('alertPopup').classList.remove('active');
+            
+            // Play success sound and speak encouragement
+            playSuccessSound();
+            setTimeout(() => {
+                speakEncouragement('reminderDone');
+            }, 300);
+        }
+
+        function snoozeAlert() {
+            dismissAlert();
+            setTimeout(() => {
+                document.getElementById('alertOverlay').classList.add('active');
+                document.getElementById('alertPopup').classList.add('active');
+                playAlertSound();
+            }, 10 * 60 * 1000); // 10 minutes
+        }
+
+        // Page navigation
+        function showPage(pageId) {
+            document.querySelectorAll('.page-section').forEach(page => {
+                page.classList.remove('active');
+            });
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById(pageId).classList.add('active');
+            document.querySelector(`[data-page="${pageId}"]`).classList.add('active');
+            
+            // Hide game container
+            document.getElementById('memoryGameContainer').classList.remove('active');
+        }
+
+        // Modal functions
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        // Render reminders
+        function renderReminders() {
+            const grid = document.getElementById('remindersGrid');
+            const icons = {
+                medicine: '💊',
+                shower: '🚿',
+                meal: '🍽️',
+                water: '💧',
+                exercise: '🏃',
+                sleep: '😴'
+            };
+            
+            grid.innerHTML = reminders.map(reminder => `
+                <div class="reminder-card">
+                    <div class="reminder-icon ${reminder.type}">${icons[reminder.type]}</div>
+                    <div class="reminder-content">
+                        <h3>${reminder.title}</h3>
+                        <div class="reminder-time">🕐 ${formatTimeFromString(reminder.time)}</div>
+                    </div>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <button onclick="editReminder(${reminder.id})" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; padding: 5px;" title="עריכה">✏️</button>
+                        <button onclick="deleteReminder(${reminder.id})" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; padding: 5px;" title="מחיקה">🗑️</button>
+                        <div class="reminder-toggle ${reminder.active ? 'active' : ''}" onclick="toggleReminder(${reminder.id})"></div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Toggle reminder
+        function toggleReminder(id) {
+            const reminder = reminders.find(r => r.id === id);
+            if (reminder) {
+                reminder.active = !reminder.active;
+                renderReminders();
+                saveData();
+            }
+        }
+
+        // Edit reminder
+        let editingReminderId = null;
+        
+        function editReminder(id) {
+            const reminder = reminders.find(r => r.id === id);
+            if (reminder) {
+                editingReminderId = id;
+                document.getElementById('reminderType').value = reminder.type;
+                document.getElementById('reminderTitle').value = reminder.title;
+                updateTimeSelector(); // Make sure selector is updated
+                setTimeSelector(reminder.time);
+                document.getElementById('reminderModalTitle').textContent = 'עריכת תזכורת';
+                document.getElementById('reminderSubmitBtn').textContent = 'שמירת שינויים';
+                openModal('reminderModal');
+            }
+        }
+
+        // Delete reminder
+        function deleteReminder(id) {
+            const reminder = reminders.find(r => r.id === id);
+            if (reminder && confirm(`למחוק את התזכורת "${reminder.title}"?`)) {
+                reminders = reminders.filter(r => r.id !== id);
+                renderReminders();
+                saveData();
+            }
+        }
+
+        // Add or update reminder
+        function addReminder(e) {
+            e.preventDefault();
+            
+            const type = document.getElementById('reminderType').value;
+            const title = document.getElementById('reminderTitle').value;
+            const time = getSelectedTime();
+            
+            if (editingReminderId) {
+                // Update existing reminder
+                const reminder = reminders.find(r => r.id === editingReminderId);
+                if (reminder) {
+                    reminder.type = type;
+                    reminder.title = title;
+                    reminder.time = time;
+                }
+                editingReminderId = null;
+            } else {
+                // Add new reminder
+                const newReminder = {
+                    id: Date.now(),
+                    type: type,
+                    title: title,
+                    time: time,
+                    active: true
+                };
+                reminders.push(newReminder);
+            }
+            
+            renderReminders();
+            closeModal('reminderModal');
+            saveData();
+            e.target.reset();
+            
+            // Reset modal to add mode
+            document.getElementById('reminderModalTitle').textContent = 'הוספת תזכורת חדשה';
+            document.getElementById('reminderSubmitBtn').textContent = 'שמירת תזכורת';
+        }
+        
+        // Reset modal when closing
+        function closeReminderModal() {
+            editingReminderId = null;
+            document.getElementById('reminderModalTitle').textContent = 'הוספת תזכורת חדשה';
+            document.getElementById('reminderSubmitBtn').textContent = 'שמירת תזכורת';
+            document.getElementById('reminderModal').querySelector('form').reset();
+            closeModal('reminderModal');
+        }
+
+        // Render contacts
+        function renderContacts() {
+            const grid = document.getElementById('contactsGrid');
+            grid.innerHTML = contacts.map(contact => `
+                <div class="contact-card">
+                    <div class="contact-avatar">${contact.initials}</div>
+                    <div class="contact-name">${contact.name}</div>
+                    <div class="contact-relation">${contact.relation}</div>
+                    <button class="call-btn" onclick="startCall('${contact.phone}')">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                        </svg>
+                        התקשר/י
+                    </button>
+                </div>
+            `).join('') + `
+            <div class="contact-card add-contact-btn" onclick="openModal('contactModal')">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+                הוספת איש קשר
+            </div>`;
+        }
+
+        // Add contact
+        function addContact(e) {
+            e.preventDefault();
+            const name = document.getElementById('contactName').value;
+            const newContact = {
+                id: Date.now(),
+                name: name,
+                relation: document.getElementById('contactRelation').value,
+                phone: document.getElementById('contactPhone').value,
+                initials: name.charAt(0)
+            };
+            contacts.push(newContact);
+            renderContacts();
+            closeModal('contactModal');
+            saveData();
+            e.target.reset();
+        }
+
+        // Start call (simulation)
+        function startCall(phone) {
+            alert(`מתחיל שיחה עם ${phone}\n\nהערה: בגרסה מלאה, כאן תיפתח שיחת וידאו`);
+        }
+
+        // Memory game
+        const emojis = ['🐶', '🐱', '🐼', '🦊', '🦁', '🐸', '🦋', '🌸'];
+        let cards = [];
+        let flippedCards = [];
+        let matchedPairs = 0;
+
+        function startMemoryGame() {
+            document.querySelectorAll('.page-section').forEach(page => {
+                page.classList.remove('active');
+            });
+            document.getElementById('memoryGameContainer').classList.add('active');
+            initMemoryGame();
+            
+            // Speak encouragement when starting
+            setTimeout(() => {
+                speakEncouragement('gameStart');
+            }, 500);
+        }
+
+        function initMemoryGame() {
+            cards = [...emojis, ...emojis]
+                .sort(() => Math.random() - 0.5)
+                .map((emoji, index) => ({ id: index, emoji, flipped: false, matched: false }));
+            
+            flippedCards = [];
+            matchedPairs = 0;
+            document.getElementById('pairsFound').textContent = '0';
+            
+            renderMemoryCards();
+        }
+
+        function renderMemoryCards() {
+            const grid = document.getElementById('memoryGrid');
+            grid.innerHTML = cards.map(card => `
+                <div class="memory-card ${card.flipped ? 'flipped' : ''} ${card.matched ? 'matched' : ''}" 
+                     onclick="flipCard(${card.id})" data-id="${card.id}">
+                    <span class="card-back">❓</span>
+                    <span class="card-front">${card.emoji}</span>
+                </div>
+            `).join('');
+        }
+
+        function flipCard(id) {
+            const card = cards.find(c => c.id === id);
+            if (!card || card.flipped || card.matched || flippedCards.length >= 2) return;
+            
+            card.flipped = true;
+            flippedCards.push(card);
+            renderMemoryCards();
+            
+            if (flippedCards.length === 2) {
+                setTimeout(checkMatch, 800);
+            }
+        }
+
+        function checkMatch() {
+            const [card1, card2] = flippedCards;
+            if (card1.emoji === card2.emoji) {
+                card1.matched = true;
+                card2.matched = true;
+                matchedPairs++;
+                document.getElementById('pairsFound').textContent = matchedPairs;
+                
+                // Play success sound and speak encouragement
+                playMatchSound();
+                setTimeout(() => {
+                    speakEncouragement('matchFound');
+                }, 200);
+                
+                if (matchedPairs === emojis.length) {
+                    setTimeout(() => {
+                        playSuccessSound();
+                        const winMessage = getRandomMessage('gameWin');
+                        speakHebrew(winMessage);
+                        showGameWinPopup(winMessage);
+                    }, 500);
+                }
+            } else {
+                card1.flipped = false;
+                card2.flipped = false;
+                playWrongSound();
+                setTimeout(() => {
+                    speakEncouragement('wrongMatch');
+                }, 200);
+            }
+            flippedCards = [];
+            renderMemoryCards();
+        }
+
+        function showGameWinPopup(message) {
+            // Create win popup
+            const popup = document.createElement('div');
+            popup.innerHTML = `
+                <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 3000; display: flex; align-items: center; justify-content: center;">
+                    <div style="background: white; border-radius: 24px; padding: 50px; text-align: center; animation: pulse 0.5s ease;">
+                        <div style="font-size: 6rem; margin-bottom: 20px;">🎉</div>
+                        <h2 style="font-size: 2.5rem; color: #2D5A7B; margin-bottom: 20px;">${message}</h2>
+                        <button onclick="this.parentElement.parentElement.remove(); initMemoryGame();" 
+                                style="background: linear-gradient(135deg, #4CAF50, #66BB6A); color: white; border: none; padding: 20px 50px; border-radius: 16px; font-size: 1.5rem; font-weight: 600; cursor: pointer; margin: 10px;">
+                            🔄 שחק שוב
+                        </button>
+                        <button onclick="this.parentElement.parentElement.remove(); exitGame();" 
+                                style="background: linear-gradient(135deg, #2D5A7B, #4A7FA8); color: white; border: none; padding: 20px 50px; border-radius: 16px; font-size: 1.5rem; font-weight: 600; cursor: pointer; margin: 10px;">
+                            🏠 חזרה לתפריט
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(popup);
+        }
+
+        function exitGame() {
+            document.getElementById('memoryGameContainer').classList.remove('active');
+            document.getElementById('puzzleGameContainer').classList.remove('active');
+            document.getElementById('matchingGameContainer').classList.remove('active');
+            document.getElementById('sequenceGameContainer').classList.remove('active');
+            document.getElementById('wordsGameContainer').classList.remove('active');
+            document.getElementById('colorsGameContainer').classList.remove('active');
+            document.getElementById('familyGameContainer').classList.remove('active');
+            showPage('gamesPage');
+        }
+
+        // Placeholder game functions
+        function startPuzzleGame() {
+            document.querySelectorAll('.page-section').forEach(page => {
+                page.classList.remove('active');
+            });
+            document.getElementById('puzzleGameContainer').classList.add('active');
+            initPuzzleGame();
+            setTimeout(() => speakEncouragement('gameStart'), 500);
+        }
+        
+        function startMatchingGame() {
+            document.querySelectorAll('.page-section').forEach(page => {
+                page.classList.remove('active');
+            });
+            document.getElementById('matchingGameContainer').classList.add('active');
+            initMatchingGame();
+            setTimeout(() => speakEncouragement('gameStart'), 500);
+        }
+        
+        function startSequenceGame() {
+            document.querySelectorAll('.page-section').forEach(page => {
+                page.classList.remove('active');
+            });
+            document.getElementById('sequenceGameContainer').classList.add('active');
+            initSequenceGame();
+            setTimeout(() => speakEncouragement('gameStart'), 500);
+        }
+        
+        function startWordsGame() {
+            document.querySelectorAll('.page-section').forEach(page => {
+                page.classList.remove('active');
+            });
+            document.getElementById('wordsGameContainer').classList.add('active');
+            initWordsGame();
+            setTimeout(() => speakEncouragement('gameStart'), 500);
+        }
+        
+        function startColorsGame() {
+            document.querySelectorAll('.page-section').forEach(page => {
+                page.classList.remove('active');
+            });
+            document.getElementById('colorsGameContainer').classList.add('active');
+            initColorsGame();
+            setTimeout(() => speakEncouragement('gameStart'), 500);
+        }
+
+        // ========== PUZZLE GAME ==========
+        let puzzlePieces = [];
+        let puzzleSize = 3;
+        
+        function initPuzzleGame() {
+            puzzlePieces = [];
+            const container = document.getElementById('puzzleGrid');
+            container.innerHTML = '';
+            
+            // Create pieces 1-8 and one empty
+            for (let i = 0; i < puzzleSize * puzzleSize; i++) {
+                puzzlePieces.push(i);
+            }
+            
+            // Shuffle (ensure solvable)
+            do {
+                for (let i = puzzlePieces.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [puzzlePieces[i], puzzlePieces[j]] = [puzzlePieces[j], puzzlePieces[i]];
+                }
+            } while (!isPuzzleSolvable());
+            
+            renderPuzzle();
+        }
+        
+        function isPuzzleSolvable() {
+            let inversions = 0;
+            for (let i = 0; i < puzzlePieces.length - 1; i++) {
+                for (let j = i + 1; j < puzzlePieces.length; j++) {
+                    if (puzzlePieces[i] && puzzlePieces[j] && puzzlePieces[i] > puzzlePieces[j]) {
+                        inversions++;
+                    }
+                }
+            }
+            return inversions % 2 === 0;
+        }
+        
+        function renderPuzzle() {
+            const container = document.getElementById('puzzleGrid');
+            container.innerHTML = puzzlePieces.map((piece, index) => `
+                <div class="puzzle-piece ${piece === 0 ? 'empty' : ''}" 
+                     onclick="movePuzzlePiece(${index})"
+                     style="background: ${piece === 0 ? '#e0e0e0' : 'linear-gradient(135deg, #667eea, #764ba2)'}; color: white; font-size: 2.5rem; font-weight: bold;">
+                    ${piece === 0 ? '' : piece}
+                </div>
+            `).join('');
+        }
+        
+        function movePuzzlePiece(index) {
+            const emptyIndex = puzzlePieces.indexOf(0);
+            const validMoves = [
+                emptyIndex - 1,
+                emptyIndex + 1,
+                emptyIndex - puzzleSize,
+                emptyIndex + puzzleSize
+            ].filter(i => {
+                if (i < 0 || i >= puzzlePieces.length) return false;
+                if (Math.abs(emptyIndex % puzzleSize - i % puzzleSize) > 1) return false;
+                return true;
+            });
+            
+            if (validMoves.includes(index)) {
+                [puzzlePieces[index], puzzlePieces[emptyIndex]] = [puzzlePieces[emptyIndex], puzzlePieces[index]];
+                playMatchSound();
+                renderPuzzle();
+                
+                if (checkPuzzleWin()) {
+                    setTimeout(() => {
+                        playSuccessSound();
+                        const msg = getRandomMessage('gameWin');
+                        speakHebrew(msg);
+                        alert('🎉 ' + msg);
+                        initPuzzleGame();
+                    }, 300);
+                }
+            }
+        }
+        
+        function checkPuzzleWin() {
+            for (let i = 0; i < puzzlePieces.length - 1; i++) {
+                if (puzzlePieces[i] !== i + 1) return false;
+            }
+            return puzzlePieces[puzzlePieces.length - 1] === 0;
+        }
+
+        // ========== MATCHING COLORS GAME ==========
+        let matchingColors = [];
+        let matchingTarget = '';
+        let matchingScore = 0;
+        let matchingTimeLeft = 30;
+        let matchingTimer = null;
+        
+        const colorsList = [
+            { name: 'אדום', color: '#e53935' },
+            { name: 'כחול', color: '#1e88e5' },
+            { name: 'ירוק', color: '#43a047' },
+            { name: 'צהוב', color: '#fdd835' },
+            { name: 'כתום', color: '#fb8c00' },
+            { name: 'סגול', color: '#8e24aa' },
+            { name: 'ורוד', color: '#ec407a' },
+            { name: 'חום', color: '#6d4c41' }
+        ];
+        
+        function initMatchingGame() {
+            matchingScore = 0;
+            matchingTimeLeft = 30;
+            document.getElementById('matchingScore').textContent = '0';
+            document.getElementById('matchingTimer').textContent = '30';
+            
+            if (matchingTimer) clearInterval(matchingTimer);
+            matchingTimer = setInterval(() => {
+                matchingTimeLeft--;
+                document.getElementById('matchingTimer').textContent = matchingTimeLeft;
+                if (matchingTimeLeft <= 0) {
+                    clearInterval(matchingTimer);
+                    endMatchingGame();
+                }
+            }, 1000);
+            
+            generateMatchingRound();
+        }
+        
+        function generateMatchingRound() {
+            // Pick 4 random colors
+            const shuffled = [...colorsList].sort(() => Math.random() - 0.5);
+            matchingColors = shuffled.slice(0, 4);
+            matchingTarget = matchingColors[Math.floor(Math.random() * matchingColors.length)];
+            
+            document.getElementById('matchingTargetText').textContent = matchingTarget.name;
+            
+            const grid = document.getElementById('matchingColorsGrid');
+            grid.innerHTML = matchingColors.sort(() => Math.random() - 0.5).map(c => `
+                <div class="matching-color-btn" 
+                     style="background: ${c.color};"
+                     onclick="checkMatchingColor('${c.name}')">
+                </div>
+            `).join('');
+        }
+        
+        function checkMatchingColor(colorName) {
+            if (colorName === matchingTarget.name) {
+                matchingScore++;
+                document.getElementById('matchingScore').textContent = matchingScore;
+                playMatchSound();
+                speakEncouragement('matchFound');
+                generateMatchingRound();
+            } else {
+                playWrongSound();
+                speakEncouragement('wrongMatch');
+            }
+        }
+        
+        function endMatchingGame() {
+            playSuccessSound();
+            const msg = `סיימת! הצלחת ${matchingScore} פעמים!`;
+            speakHebrew(msg);
+            alert('🎉 ' + msg);
+        }
+
+        // ========== SEQUENCE GAME ==========
+        let sequenceNumbers = [];
+        let sequenceAnswer = 0;
+        let sequenceScore = 0;
+        
+        function initSequenceGame() {
+            sequenceScore = 0;
+            document.getElementById('sequenceScore').textContent = '0';
+            generateSequenceRound();
+        }
+        
+        function generateSequenceRound() {
+            const start = Math.floor(Math.random() * 10) + 1;
+            const step = Math.floor(Math.random() * 5) + 1;
+            sequenceNumbers = [];
+            
+            for (let i = 0; i < 4; i++) {
+                sequenceNumbers.push(start + step * i);
+            }
+            sequenceAnswer = start + step * 4;
+            
+            document.getElementById('sequenceDisplay').textContent = 
+                sequenceNumbers.join(' , ') + ' , ?';
+            
+            // Generate options
+            const options = [sequenceAnswer];
+            while (options.length < 4) {
+                const wrong = sequenceAnswer + (Math.floor(Math.random() * 10) - 5);
+                if (wrong !== sequenceAnswer && wrong > 0 && !options.includes(wrong)) {
+                    options.push(wrong);
+                }
+            }
+            options.sort(() => Math.random() - 0.5);
+            
+            const grid = document.getElementById('sequenceOptions');
+            grid.innerHTML = options.map(opt => `
+                <button class="sequence-option-btn" onclick="checkSequenceAnswer(${opt})">
+                    ${opt}
+                </button>
+            `).join('');
+        }
+        
+        function checkSequenceAnswer(answer) {
+            if (answer === sequenceAnswer) {
+                sequenceScore++;
+                document.getElementById('sequenceScore').textContent = sequenceScore;
+                playMatchSound();
+                speakEncouragement('matchFound');
+                
+                if (sequenceScore >= 5) {
+                    playSuccessSound();
+                    const msg = getRandomMessage('gameWin');
+                    speakHebrew(msg);
+                    alert('🎉 ' + msg);
+                    sequenceScore = 0;
+                    document.getElementById('sequenceScore').textContent = '0';
+                }
+                generateSequenceRound();
+            } else {
+                playWrongSound();
+                speakEncouragement('wrongMatch');
+            }
+        }
+
+        // ========== WORDS GAME ==========
+        const hebrewWords = ['שמש', 'ירח', 'כוכב', 'פרח', 'עץ', 'בית', 'דלת', 'חלון', 'שולחן', 'כיסא', 'מים', 'אש', 'רוח', 'ארץ', 'שמים'];
+        let wordsGrid = [];
+        let wordsTarget = '';
+        let wordsFound = 0;
+        
+        function initWordsGame() {
+            wordsFound = 0;
+            document.getElementById('wordsScore').textContent = '0';
+            generateWordsRound();
+        }
+        
+        function generateWordsRound() {
+            // Pick a target word
+            wordsTarget = hebrewWords[Math.floor(Math.random() * hebrewWords.length)];
+            document.getElementById('wordsTargetText').textContent = wordsTarget;
+            
+            // Create grid with target and random letters
+            const letters = wordsTarget.split('');
+            const hebrewLetters = 'אבגדהוזחטיכלמנסעפצקרשת'.split('');
+            
+            while (letters.length < 12) {
+                letters.push(hebrewLetters[Math.floor(Math.random() * hebrewLetters.length)]);
+            }
+            letters.sort(() => Math.random() - 0.5);
+            
+            const grid = document.getElementById('wordsLettersGrid');
+            grid.innerHTML = letters.map((letter, i) => `
+                <div class="word-letter" onclick="selectWordLetter(this, '${letter}')" data-index="${i}">
+                    ${letter}
+                </div>
+            `).join('');
+            
+            document.getElementById('wordsCurrentWord').textContent = '';
+        }
+        
+        let selectedLetters = [];
+        function selectWordLetter(el, letter) {
+            if (el.classList.contains('selected')) {
+                el.classList.remove('selected');
+                selectedLetters = selectedLetters.filter(l => l.index !== el.dataset.index);
+            } else {
+                el.classList.add('selected');
+                selectedLetters.push({ letter, index: el.dataset.index });
+            }
+            
+            const currentWord = selectedLetters.map(l => l.letter).join('');
+            document.getElementById('wordsCurrentWord').textContent = currentWord;
+            
+            if (currentWord === wordsTarget) {
+                playMatchSound();
+                wordsFound++;
+                document.getElementById('wordsScore').textContent = wordsFound;
+                speakEncouragement('matchFound');
+                
+                if (wordsFound >= 5) {
+                    playSuccessSound();
+                    const msg = getRandomMessage('gameWin');
+                    speakHebrew(msg);
+                    alert('🎉 ' + msg);
+                    wordsFound = 0;
+                    document.getElementById('wordsScore').textContent = '0';
+                }
+                
+                selectedLetters = [];
+                setTimeout(generateWordsRound, 500);
+            }
+        }
+        
+        function clearWordSelection() {
+            selectedLetters = [];
+            document.querySelectorAll('.word-letter').forEach(el => el.classList.remove('selected'));
+            document.getElementById('wordsCurrentWord').textContent = '';
+        }
+
+        // ========== COLORS LISTENING GAME ==========
+        let colorsListeningScore = 0;
+        let colorsListeningTarget = null;
+        
+        function initColorsGame() {
+            colorsListeningScore = 0;
+            document.getElementById('colorsListeningScore').textContent = '0';
+            generateColorsRound();
+        }
+        
+        function generateColorsRound() {
+            const colors = [
+                { name: 'אדום', color: '#e53935' },
+                { name: 'כחול', color: '#1e88e5' },
+                { name: 'ירוק', color: '#43a047' },
+                { name: 'צהוב', color: '#fdd835' }
+            ];
+            
+            colorsListeningTarget = colors[Math.floor(Math.random() * colors.length)];
+            
+            // Speak the color
+            setTimeout(() => {
+                speakHebrew('לחץ על הצבע ' + colorsListeningTarget.name);
+            }, 500);
+            
+            const grid = document.getElementById('colorsListeningGrid');
+            const shuffled = [...colors].sort(() => Math.random() - 0.5);
+            grid.innerHTML = shuffled.map(c => `
+                <div class="color-listening-btn" 
+                     style="background: ${c.color};"
+                     onclick="checkColorsListening('${c.name}')">
+                </div>
+            `).join('');
+        }
+        
+        function checkColorsListening(colorName) {
+            if (colorName === colorsListeningTarget.name) {
+                colorsListeningScore++;
+                document.getElementById('colorsListeningScore').textContent = colorsListeningScore;
+                playMatchSound();
+                speakEncouragement('matchFound');
+                
+                if (colorsListeningScore >= 5) {
+                    playSuccessSound();
+                    const msg = getRandomMessage('gameWin');
+                    speakHebrew(msg);
+                    alert('🎉 ' + msg);
+                    colorsListeningScore = 0;
+                    document.getElementById('colorsListeningScore').textContent = '0';
+                }
+                
+                setTimeout(generateColorsRound, 1000);
+            } else {
+                playWrongSound();
+                speakEncouragement('wrongMatch');
+            }
+        }
+        
+        function repeatColorInstruction() {
+            speakHebrew('לחץ על הצבע ' + colorsListeningTarget.name);
+        }
+
+        // ========== FAMILY RECOGNITION GAME ==========
+        let familyMembers = [];
+        let familyScore = 0;
+        let familyCurrentMember = null;
+        
+        function loadFamilyMembers() {
+            const saved = localStorage.getItem('familyMembers');
+            if (saved) {
+                familyMembers = JSON.parse(saved);
+            }
+        }
+        
+        function saveFamilyMembers() {
+            localStorage.setItem('familyMembers', JSON.stringify(familyMembers));
+        }
+        
+        function startFamilyGame() {
+            document.querySelectorAll('.page-section').forEach(page => {
+                page.classList.remove('active');
+            });
+            document.getElementById('familyGameContainer').classList.add('active');
+            
+            loadFamilyMembers();
+            
+            if (familyMembers.length < 2) {
+                document.getElementById('familyGameActive').style.display = 'none';
+                document.getElementById('familyGameSetup').style.display = 'block';
+            } else {
+                document.getElementById('familyGameSetup').style.display = 'none';
+                document.getElementById('familyGameActive').style.display = 'block';
+                familyScore = 0;
+                document.getElementById('familyScore').textContent = '0';
+                generateFamilyRound();
+                setTimeout(() => speakEncouragement('gameStart'), 500);
+            }
+        }
+        
+        function generateFamilyRound() {
+            // Pick random family member
+            familyCurrentMember = familyMembers[Math.floor(Math.random() * familyMembers.length)];
+            
+            // Show photo
+            const photoEl = document.getElementById('familyPhoto');
+            const placeholderEl = document.getElementById('familyPhotoPlaceholder');
+            
+            if (familyCurrentMember.photo) {
+                photoEl.src = familyCurrentMember.photo;
+                photoEl.style.display = 'block';
+                placeholderEl.style.display = 'none';
+            } else {
+                photoEl.style.display = 'none';
+                placeholderEl.style.display = 'block';
+            }
+            
+            // Create options (correct + 3 wrong)
+            let options = [{ name: familyCurrentMember.name, correct: true }];
+            
+            // Add wrong options
+            const otherMembers = familyMembers.filter(m => m.name !== familyCurrentMember.name);
+            const shuffledOthers = otherMembers.sort(() => Math.random() - 0.5);
+            
+            for (let i = 0; i < Math.min(3, shuffledOthers.length); i++) {
+                options.push({ name: shuffledOthers[i].name, correct: false });
+            }
+            
+            // If not enough family members, add generic names
+            const genericNames = ['יוסי', 'שרה', 'דני', 'רחל', 'משה', 'לאה', 'אבי', 'מרים'];
+            while (options.length < 4) {
+                const randomName = genericNames[Math.floor(Math.random() * genericNames.length)];
+                if (!options.find(o => o.name === randomName)) {
+                    options.push({ name: randomName, correct: false });
+                }
+            }
+            
+            // Shuffle options
+            options.sort(() => Math.random() - 0.5);
+            
+            // Render options
+            const optionsContainer = document.getElementById('familyOptions');
+            optionsContainer.innerHTML = options.map(opt => `
+                <button class="family-option-btn" onclick="checkFamilyAnswer('${opt.name}', ${opt.correct})">
+                    ${opt.name}
+                </button>
+            `).join('');
+            
+            // Speak the question
+            setTimeout(() => {
+                speakHebrew('מי בתמונה?');
+            }, 500);
+        }
+        
+        function checkFamilyAnswer(name, isCorrect) {
+            if (isCorrect) {
+                familyScore++;
+                document.getElementById('familyScore').textContent = familyScore;
+                playMatchSound();
+                speakHebrew('נכון! זה ' + familyCurrentMember.name + ', ' + familyCurrentMember.relation);
+                
+                if (familyScore >= 5) {
+                    setTimeout(() => {
+                        playSuccessSound();
+                        const msg = getRandomMessage('gameWin');
+                        speakHebrew(msg);
+                        alert('🎉 ' + msg);
+                        familyScore = 0;
+                        document.getElementById('familyScore').textContent = '0';
+                        generateFamilyRound();
+                    }, 2000);
+                } else {
+                    setTimeout(generateFamilyRound, 2000);
+                }
+            } else {
+                playWrongSound();
+                speakHebrew('לא נכון. נסה שוב');
+            }
+        }
+        
+        function previewFamilyPhoto(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('newFamilyPhotoPreview');
+                    preview.innerHTML = `<img src="${e.target.result}" style="width: 100%; height: 100%; object-fit: cover;">`;
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+        
+        function addFamilyMember() {
+            const name = document.getElementById('newFamilyName').value.trim();
+            const relation = document.getElementById('newFamilyRelation').value.trim();
+            const photoInput = document.getElementById('newFamilyPhoto');
+            
+            if (!name) {
+                alert('נא להזין שם');
+                return;
+            }
+            
+            const newMember = {
+                id: Date.now(),
+                name: name,
+                relation: relation || '',
+                photo: ''
+            };
+            
+            if (photoInput.files && photoInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    newMember.photo = e.target.result;
+                    familyMembers.push(newMember);
+                    saveFamilyMembers();
+                    renderFamilyMembersList();
+                    clearFamilyForm();
+                };
+                reader.readAsDataURL(photoInput.files[0]);
+            } else {
+                familyMembers.push(newMember);
+                saveFamilyMembers();
+                renderFamilyMembersList();
+                clearFamilyForm();
+            }
+        }
+        
+        function clearFamilyForm() {
+            document.getElementById('newFamilyName').value = '';
+            document.getElementById('newFamilyRelation').value = '';
+            document.getElementById('newFamilyPhoto').value = '';
+            document.getElementById('newFamilyPhotoPreview').innerHTML = '<span style="font-size: 2rem;">👤</span>';
+        }
+        
+        function renderFamilyMembersList() {
+            const container = document.getElementById('familyMembersList');
+            
+            if (familyMembers.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">עדיין לא הוספת בני משפחה</p>';
+                return;
+            }
+            
+            container.innerHTML = familyMembers.map(member => `
+                <div style="display: flex; align-items: center; gap: 15px; padding: 15px; background: white; border-radius: 12px; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <div style="width: 60px; height: 60px; border-radius: 50%; background: #e0e0e0; overflow: hidden; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">
+                        ${member.photo ? 
+                            `<img src="${member.photo}" style="width: 100%; height: 100%; object-fit: cover;">` : 
+                            '<span style="font-size: 1.5rem;">👤</span>'}
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; font-size: 1.2rem;">${member.name}</div>
+                        <div style="color: var(--text-secondary);">${member.relation || ''}</div>
+                    </div>
+                    <button onclick="deleteFamilyMember(${member.id})" style="background: var(--danger); color: white; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 1.2rem;">🗑️</button>
+                </div>
+            `).join('');
+        }
+        
+        function deleteFamilyMember(id) {
+            if (confirm('למחוק את בן המשפחה?')) {
+                familyMembers = familyMembers.filter(m => m.id !== id);
+                saveFamilyMembers();
+                renderFamilyMembersList();
+            }
+        }
+        
+        // Load family members on page load
+        loadFamilyMembers();
+
+        // Fullscreen
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        // Font size
+        function changeFontSize(value) {
+            document.body.style.fontSize = value + '%';
+        }
+
+        // Save/Load data
+        function saveData() {
+            localStorage.setItem('dementia_reminders', JSON.stringify(reminders));
+            localStorage.setItem('dementia_contacts', JSON.stringify(contacts));
+        }
+
+        function loadData() {
+            const savedReminders = localStorage.getItem('dementia_reminders');
+            const savedContacts = localStorage.getItem('dementia_contacts');
+            if (savedReminders) reminders = JSON.parse(savedReminders);
+            if (savedContacts) contacts = JSON.parse(savedContacts);
+        }
+
+        // Initialize
+        loadData();
+        loadVoiceSettings();
+        loadTimeFormat();
+        loadUserSettings();
+        updateTimeSelector(); // Initialize time selector
+        updateClock();
+        setInterval(updateClock, 1000);
+        renderReminders();
+        renderContacts();
+
+        // Speak greeting on load
+        window.addEventListener('load', () => {
+            // Load voices first
+            if ('speechSynthesis' in window) {
+                speechSynthesis.getVoices();
+                setTimeout(() => {
+                    const hour = new Date().getHours();
+                    let greeting;
+                    if (hour >= 5 && hour < 12) {
+                        greeting = 'בוקר טוב! שיהיה יום נפלא!';
+                    } else if (hour >= 12 && hour < 17) {
+                        greeting = 'צהריים טובים!';
+                    } else if (hour >= 17 && hour < 21) {
+                        greeting = 'ערב טוב!';
+                    } else {
+                        greeting = 'לילה טוב!';
+                    }
+                    speakHebrew(greeting, 0.9);
+                }, 1000);
+            }
+        });
+
+        // Prevent sleep (request wake lock if available)
+        if ('wakeLock' in navigator) {
+            navigator.wakeLock.request('screen').catch(() => {});
+        }
+    </script>
+    <script>
+        // Register Service Worker for PWA/offline support
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(registration => {
+                        console.log('ServiceWorker registered:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.log('ServiceWorker registration failed:', error);
+                    });
+            });
+        }
+    </script>
+</body>
+</html>

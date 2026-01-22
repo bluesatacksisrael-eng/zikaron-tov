@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <!-- Background circle -->
+  <circle cx="256" cy="256" r="250" fill="#2D5A7B"/>
+  
+  <!-- Inner circle (clock face) -->
+  <circle cx="256" cy="256" r="200" fill="white"/>
+  
+  <!-- Clock hands -->
+  <line x1="256" y1="256" x2="256" y2="120" stroke="#2D5A7B" stroke-width="12" stroke-linecap="round"/>
+  <line x1="256" y1="256" x2="340" y2="256" stroke="#E8A849" stroke-width="10" stroke-linecap="round"/>
+  
+  <!-- Center dot -->
+  <circle cx="256" cy="256" r="15" fill="#2D5A7B"/>
+  
+  <!-- Heart symbol -->
+  <path d="M256 380 C200 330 150 280 150 230 C150 180 190 150 230 150 C250 150 265 165 270 180 C270 180 275 190 285 190 C295 190 300 180 300 180 C305 165 320 150 340 150 C380 150 420 180 420 230 C420 280 370 330 314 380 L256 430 Z" 
+        fill="#E8A849" transform="translate(-30, 50) scale(0.5)"/>
+  
+  <!-- Hour markers -->
+  <circle cx="256" cy="80" r="10" fill="#2D5A7B"/>
+  <circle cx="256" cy="432" r="10" fill="#2D5A7B"/>
+  <circle cx="80" cy="256" r="10" fill="#2D5A7B"/>
+  <circle cx="432" cy="256" r="10" fill="#2D5A7B"/>
+</svg>
